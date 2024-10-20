@@ -14,7 +14,7 @@ router.post(
   [
     body("title")
       .trim()
-      .isLength({ min: 5 })
+      .isLength({ min: 7 })
       .withMessage("Title must be at least 5 characters long"),
     body("content")
       .trim()
