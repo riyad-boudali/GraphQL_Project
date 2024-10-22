@@ -50,10 +50,16 @@ exports.createPost = (req, res, next) => {
     error.statusCode = 422;
     throw error; // throw for sync code
   }
+  if (!req.file) {
+    const error = new Error("No image provided!");
+    error.statusCode = 422;
+    throw error;
+  }
+  const imageUrl = req.file.path
   const post = new Post({
     title: title,
     content: content,
-    imageUrl: "../images/pngegg.png",
+    imageUrl: imageUrl,
     creator: { name: "riadh" },
   });
   post

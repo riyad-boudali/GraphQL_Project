@@ -3,6 +3,7 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const multer = require('multer')
 
 dotenv.config();
 const feedRoutes = require("./routes/feed");
@@ -11,8 +12,30 @@ const app = express();
 
 app.use("/images", express.static(path.join(__dirname, "images"))); // to serve static images
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "images");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().toISOString() + "-" + file.originalname);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'image/png' || 
+    file.mimetype === 'image/jpeg' ||
+    file.mimetype === 'image/ jpg'
+  ) {
+    cb(null, true)
+  }
+  else {
+    cb(null, false)
+  }
+}
+
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // a middleware for body-parser for content-type of application/json
+app.use(multer({fileFilter:fileFilter, storage: fileStorage}).single('image'))
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*"); // to set a header for Access-Control-Allow-Origin to prevent CORS errors
