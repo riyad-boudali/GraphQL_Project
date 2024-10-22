@@ -7,6 +7,7 @@ const router = express.Router();
 
 // GET /feed/posts
 router.get("/posts", feedController.getPosts);
+router.get("/post/:postID", feedController.getPost)
 
 // POST /feed/post
 router.post(
@@ -14,7 +15,7 @@ router.post(
   [
     body("title")
       .trim()
-      .isLength({ min: 7 })
+      .isLength({ min: 5 })
       .withMessage("Title must be at least 5 characters long"),
     body("content")
       .trim()
