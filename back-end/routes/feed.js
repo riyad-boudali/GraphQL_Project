@@ -41,4 +41,7 @@ router.post(
   feedController.createPost
 );
 
+// DELETE /feed/post 
+router.delete('/post/:postId', feedController.deletePost)
+
 module.exports = router;
