@@ -4,7 +4,17 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 
 exports.getPosts = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 1;
+  let totalItems;
   Post.find()
+    .countDocuments()
+    .then((count) => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
+    })
     .then((posts) => {
       if (!posts) {
         const error = new Error("Could not find posts");
@@ -14,6 +24,7 @@ exports.getPosts = (req, res, next) => {
       res.status(200).json({
         message: "Posts fetched",
         posts: posts,
+        totalItems: totalItems,
       });
     })
     .catch((err) => {
@@ -90,7 +101,7 @@ exports.updatePost = (req, res, next) => {
   }
   const title = req.body.title;
   const content = req.body.content;
-  let imageUrl = req.body.image;
+  let imageUrl = req.body.image; // to check if the the use inserted a new image that meas he assigned req.file
   if (req.file) {
     imageUrl = req.file.path;
   }
@@ -104,10 +115,11 @@ exports.updatePost = (req, res, next) => {
       if (!post) {
         const error = new Error("Could not find post.");
         error.statusCode = 404;
-        throw error; // we have used throw instead of next in this case to reach the catch block and then we next the error
+        throw error;
       }
       if (imageUrl !== post.imageUrl) {
-        clearImage(post.imageUrl);
+        // check if thr old imageUrl is the same with the new whcich means that the user didn't insert a new image
+        clearImage(post.imageUrl); // if that not the case we delete the old imageurl and then update it using the new one
       }
       post.title = title;
       post.imageUrl = imageUrl;
