@@ -49,7 +49,7 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRoutes);
-app.use(authRoutes)
+app.use("/auth", authRoutes)
 
 app.use((error, req, res, next) => {  // to handle all errors
   console.log(error);

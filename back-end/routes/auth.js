@@ -21,10 +21,9 @@ router.put(
         gmail_remove_subaddress: false,
       })
       .custom((value, { req }) => {
-        // { req } object destructuring to get the req property
-        User.findOne({ email: value }).then((user) => {
+        return User.findOne({ email: value }).then((user) => {
           if (user) {
-            return Promise.reject("Email alredy Exists");
+            return Promise.reject("Email already exists");
           }
         });
       }),
@@ -33,7 +32,7 @@ router.put(
       .isStrongPassword()
       .withMessage(
         `Password must be at least 8 characters long and include at least one uppercase letter,
-         one lowercase letter, one number, and one special character `
+         one lowercase letter, one number, and one special character`
       ),
   ],
   authController.signup
