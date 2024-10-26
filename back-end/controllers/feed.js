@@ -5,36 +5,27 @@ const { validationResult } = require("express-validator");
 const Post = require("../models/post");
 const User = require("../models/user");
 
-exports.getPosts = (req, res, next) => {
+exports.getPosts = async (req, res, next) => {
   const currentPage = req.query.page || 1;
   const perPage = 2; // items to be displayed for each page
-  let totalItems;
-  Post.find({ creator: req.userId }) // { creator: req.userId } => authorization
-    .countDocuments()
-    .then((count) => {
-      totalItems = count;
-      return Post.find({ creator: req.userId }) // { creator: req.userId } => authorization
-        .skip((currentPage - 1) * perPage)
-        .limit(perPage);
-    })
-    .then((posts) => {
-      if (!posts) {
-        const error = new Error("Could not find posts");
-        error.statusCode = 404;
-        throw error;
-      }
-      res.status(200).json({
-        message: "Posts fetched",
-        posts: posts,
-        totalItems: totalItems,
-      });
-    })
-    .catch((err) => {
-      if (!err.statusCode) {
-        err.statusCode = 500;
-        next(err);
-      }
+  try {
+    const totalItems = await Post.find({
+      creator: req.userId,
+    }).countDocuments(); // { creator: req.userId } for authorization
+    const posts = await Post.find({ creator: req.userId })
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+    res.status(200).json({
+      message: "Posts fetched",
+      posts: posts,
+      totalItems: totalItems,
     });
+  } catch (err) {
+    if (!err.statusCode) {
+      err.statusCode = 500;
+      next(err);
+    }
+  }
 };
 
 exports.getPost = (req, res, next) => {

@@ -3,7 +3,8 @@ const path = require("path");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const multer = require('multer')
+const multer = require("multer");
+const { Server } = require("socket.io");
 
 dotenv.config();
 const feedRoutes = require("./routes/feed");
@@ -23,20 +24,22 @@ const fileStorage = multer.diskStorage({
 });
 
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === 'image/png' || 
-    file.mimetype === 'image/jpeg' ||
-    file.mimetype === 'image/ jpg'
+  if (
+    file.mimetype === "image/png" ||
+    file.mimetype === "image/jpeg" ||
+    file.mimetype === "image/ jpg"
   ) {
-    cb(null, true)
+    cb(null, true);
+  } else {
+    cb(null, false);
   }
-  else {
-    cb(null, false)
-  }
-}
+};
 
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded <form>
 app.use(bodyParser.json()); // a middleware for body-parser for content-type of application/json
-app.use(multer({fileFilter:fileFilter, storage: fileStorage}).single('image'))
+app.use(
+  multer({ fileFilter: fileFilter, storage: fileStorage }).single("image")
+);
 
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*"); // to set a header for Access-Control-Allow-Origin to prevent CORS errors
@@ -49,9 +52,10 @@ app.use((req, res, next) => {
 });
 
 app.use("/feed", feedRoutes);
-app.use("/auth", authRoutes)
+app.use("/auth", authRoutes);
 
-app.use((error, req, res, next) => {  // to handle all errors
+app.use((error, req, res, next) => {
+  // to handle all errors
   console.log(error);
   const status = error.statusCode || 500;
   const message = error.message;
@@ -61,7 +65,18 @@ app.use((error, req, res, next) => {  // to handle all errors
 mongoose
   .connect(MONGODB_URI)
   .then((result) => {
-    app.listen(8080);
+    const server = app.listen(8080);
+    const io = new Server(server, {
+      cors: {
+        origin: "http://localhost:3000", // TO handle Cors errors
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Allow ALL HTTP methods
+        allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
+        credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+      },
+    });
+    io.on("connection", (socket) => {
+      console.log("Client connected!");
+    });
   })
   .catch((err) => {
     console.log(err);
