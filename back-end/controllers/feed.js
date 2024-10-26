@@ -179,7 +179,7 @@ exports.deletePost = (req, res, next) => {
       return User.findById(req.userId);
     })
     .then((user) => {
-      user.posts.pull(postId);
+      user.posts.pull(postId); // to clear post-user relation
       return user.save();
     })
     .then((result) => {
