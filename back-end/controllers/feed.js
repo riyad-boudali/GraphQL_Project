@@ -7,13 +7,13 @@ const User = require("../models/user");
 
 exports.getPosts = (req, res, next) => {
   const currentPage = req.query.page || 1;
-  const perPage = 2;  // items to be displayed for each page
+  const perPage = 2; // items to be displayed for each page
   let totalItems;
-  Post.find()
+  Post.find({ creator: req.userId }) // { creator: req.userId } => authorization
     .countDocuments()
     .then((count) => {
       totalItems = count;
-      return Post.find()
+      return Post.find({ creator: req.userId }) // { creator: req.userId } => authorization
         .skip((currentPage - 1) * perPage)
         .limit(perPage);
     })
@@ -37,7 +37,7 @@ exports.getPosts = (req, res, next) => {
     });
 };
 
-exports.getPost = (req, res, next) => { 
+exports.getPost = (req, res, next) => {
   const postId = req.params.postId;
   Post.findById(postId)
     .then((post) => {
@@ -92,7 +92,7 @@ exports.createPost = (req, res, next) => {
     .then((result) => {
       res.status(201).json({
         message: "Post created successfully!",
-        post: post, 
+        post: post,
         creator: { _id: creator._id, name: creator.name },
       });
     })
@@ -130,6 +130,12 @@ exports.updatePost = (req, res, next) => {
         error.statusCode = 404;
         throw error;
       }
+      if (post.creator.toString() !== req.userId) {
+        // authorization logic
+        const error = new Error("Not Authprozied!");
+        error.statusCode = 403;
+        throw error;
+      }
       if (imageUrl !== post.imageUrl) {
         // check if thr old imageUrl is the same with the new whcich means that the user didn't insert a new image
         clearImage(post.imageUrl); // if that not the case we delete the old imageurl and then update it using the new one
@@ -157,6 +163,12 @@ exports.deletePost = (req, res, next) => {
       if (!post) {
         const error = new Error("Could not find post.");
         error.statusCode = 404;
+        throw error;
+      }
+      if (post.creator.toString() !== req.userId) {
+        // authorization logic
+        const error = new Error("Not Authprozied!");
+        error.statusCode = 403;
         throw error;
       }
       //Checked login user
