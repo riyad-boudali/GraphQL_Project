@@ -13,6 +13,7 @@ router.get("/post/:postId", isAuth, feedController.getPost);
 // PUT /feed/post/:postId
 router.put(
   "/post/:postId",
+  isAuth,
   [
     body("title")
       .trim()
