@@ -66,14 +66,7 @@ mongoose
   .connect(MONGODB_URI)
   .then((result) => {
     const server = app.listen(8080);
-    const io = new Server(server, {
-      cors: {
-        origin: "http://localhost:3000", // TO handle Cors errors
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // Allow ALL HTTP methods
-        allowedHeaders: ["Content-Type", "Authorization"], // Allow these headers
-        credentials: true, // Allow credentials (cookies, authorization headers, etc.)
-      },
-    });
+    const io = require("./socket").init(server);
     io.on("connection", (socket) => {
       console.log("Client connected!");
     });
