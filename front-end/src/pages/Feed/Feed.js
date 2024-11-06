@@ -45,6 +45,11 @@ class Feed extends Component {
     socket.on("connect", () => {
       console.log(socket.id);
     });
+    socket.on('posts', data => {
+      if (data.action === 'create') {
+        this.addPost(data.post)
+      }
+    })
   }
 
   addPost = post => {

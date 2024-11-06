@@ -80,7 +80,11 @@ exports.createPost = async (req, res, next) => {
     }
     creator = user;
     user.posts.push(post);
-    await user.save();
+    await user.save()
+    io.getIO().emit("posts", {  // to notice other users about the creations of this post
+      action: "create",     // "posts" is name of the event, then we send JS object
+      post: post,
+    });
     res.status(201).json({
       message: "Post created successfully!",
       post: post,
