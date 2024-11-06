@@ -14,6 +14,7 @@ exports.getPosts = async (req, res, next) => {
       creator: req.userId,
     }).countDocuments(); // { creator: req.userId } for authorization
     const posts = await Post.find({ creator: req.userId })
+      .populate("creator")
       .skip((currentPage - 1) * perPage)
       .limit(perPage);
     res.status(200).json({
@@ -80,10 +81,11 @@ exports.createPost = async (req, res, next) => {
     }
     creator = user;
     user.posts.push(post);
-    await user.save()
-    io.getIO().emit("posts", {  // to notice other users about the creations of this post
-      action: "create",     // "posts" is name of the event, then we send JS object
-      post: post,
+    await user.save();
+    io.getIO().emit("posts", {
+      // to notice other users about the creations of this post
+      action: "create", // "posts" is name of the event, then we send JS object
+      post: { ...post._doc, creator: { _id: req.userId, name: user.name } },
     });
     res.status(201).json({
       message: "Post created successfully!",
