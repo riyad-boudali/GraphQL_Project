@@ -57,6 +57,7 @@ app.use(
   createHandler({
     schema: graphqlSchema,
     rootValue: graphqlResolver,
+    graphiql: true,
   })
 );
 
