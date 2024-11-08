@@ -1,1 +1,1 @@
-# REST_APIs_Project
+# GraphQL_Project
