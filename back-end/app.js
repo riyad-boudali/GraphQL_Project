@@ -4,11 +4,12 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const multer = require("multer");
-const { Server } = require("socket.io");
+const { createHandler } = require("graphql-http/lib/use/express");
+
+const graphqlSchema = require("./graphql/schema");
+const graphqlResolver = require("./graphql/resolvers");
 
 dotenv.config();
-const feedRoutes = require("./routes/feed");
-const authRoutes = require("./routes/auth");
 const MONGODB_URI = process.env.MONGODB_URI;
 const app = express();
 
@@ -51,6 +52,13 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(
+  "/graphql",
+  createHandler({
+    schema: graphqlSchema,
+    rootValue: graphqlResolver,
+  })
+);
 
 app.use((error, req, res, next) => {
   // to handle all errors
