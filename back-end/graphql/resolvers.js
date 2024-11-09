@@ -3,6 +3,7 @@ const validator = require("validator");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const Post = require("../models/post");
 
 module.exports = {
   createUser: async function ({ userInput }, req) {
@@ -33,7 +34,7 @@ module.exports = {
     const createdUser = await user.save();
     return { ...createdUser._doc, _id: createdUser._id.toString() }; // createdUser._doc will return the user doc without the additional metadata added by mongoose
   },
-  
+
   login: async function ({ email, password }) {
     const user = await User.findOne({ email: email });
     if (!user) {
@@ -56,5 +57,34 @@ module.exports = {
       { expiresIn: "1h" }
     );
     return { token: token, userId: user._id.toString() };
+  },
+
+  createPost: async function ({ postInput }, req) {
+    const errors = [];
+    if (!validator.isLength(postInput.title, { min: 3 })) {
+      errors.push({ messahe: "Title must be at least 3 characters long!" });
+    }
+    if (!validator.isLength(postInput.content, { min: 5 })) {
+      errors.push({ message: "Title must be at least 5 characters long!" });
+    }
+    if (errors.length > 0) {
+      const error = new Error("Invalid Input");
+      error.data = errors;
+      error.code = 422;
+      throw error;
+    }
+    const post = new Post({
+      title: postInput.title,
+      content: postInput.content,
+      imageUrl: postInput.imageUrl,
+    });
+    const createdPost = await post.save();
+    // add post to user's post
+    return {
+      ...createdPost._doc,
+      _id: createdPost._id.toString(),
+      createdAt: createdPost.createdAt.toISOString(),
+      updatedAt: createdPost.updatedAt.toISOString(),
+    };
   },
 };
