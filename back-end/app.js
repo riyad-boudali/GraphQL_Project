@@ -49,14 +49,14 @@ app.use((req, res, next) => {
     "Access-Control-Allow-Methods",
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') {
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
   next();
 });
 
-app.use(auth)
+app.use(auth);
 
 app.use(
   "/graphql",
@@ -64,12 +64,13 @@ app.use(
     schema: graphqlSchema,
     rootValue: graphqlResolver,
     graphiql: true,
+    context: (req) => ({  isAuth: req.raw.isAuth, userId: req.raw.userId  }),
     formatError(err) {
       if (!err.originalError) {
         return err;
       }
       const data = err.originalError.data;
-      const message = err.message || "An error occured.";
+      const message = err.message || "An error occurred.";
       const code = err.originalError.code || 500;
       return { message: message, status: code, data: data };
     },
