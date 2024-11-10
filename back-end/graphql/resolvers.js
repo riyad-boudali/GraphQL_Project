@@ -106,9 +106,9 @@ module.exports = {
       updatedAt: createdPost.updatedAt.toISOString(),
     };
   },
-  posts: async function({page}, req) {
+  posts: async function ({ page }, req) {
     if (!req.isAuth) {
-      const error = new Error('Not authenticated!');
+      const error = new Error("Not authenticated!");
       error.code = 401;
       throw error;
     }
@@ -121,17 +121,36 @@ module.exports = {
       .sort({ createdAt: -1 })
       .skip((page - 1) * perPage)
       .limit(2)
-      .populate('creator');
+      .populate("creator");
     return {
-      posts: posts.map(p => {
+      posts: posts.map((p) => {
         return {
           ...p._doc,
           _id: p._id.toString(),
           createdAt: p.createdAt.toISOString(),
-          updatedAt: p.updatedAt.toISOString()
+          updatedAt: p.updatedAt.toISOString(),
         };
       }),
-      totalPosts: totalPosts
+      totalPosts: totalPosts,
+    };
+  },
+  post: async function({ id }, req) {
+    if (!req.isAuth) {
+      const error = new Error('Not authenticated!');
+      error.code = 401;
+      throw error;
+    }
+    const post = await Post.findById(id).populate('creator');
+    if (!post) {
+      const error = new Error('No post found!');
+      error.code = 404;
+      throw error;
+    }
+    return {
+      ...post._doc,
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toISOString(),
+      updatedAt: post.updatedAt.toISOString()
     };
   }
 };
