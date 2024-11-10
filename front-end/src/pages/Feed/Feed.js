@@ -57,21 +57,21 @@ class Feed extends Component {
     const graphqlQuery = {
       query: `
         {
-          posts{
+          posts(page: ${page}) {
             posts {
-                _id
-                title
-                content
-                createdAt
-                creator {
-                    name
-                }
+              _id
+              title
+              content
+              creator {
+                name
+              }
+              createdAt
             }
             totalPosts
           }
         }
       `
-    }
+    };
     fetch('http://localhost:8080/graphql', {
       method: 'POST',
       headers: {
@@ -103,7 +103,7 @@ class Feed extends Component {
 
   statusUpdateHandler = event => {
     event.preventDefault();
-    fetch('http://localhost:8080/graphql', {
+    fetch('http://localhost:8080/auth/status', {
       method: 'PATCH',
       headers: {
         Authorization: 'Bearer ' + this.props.token,
@@ -201,7 +201,18 @@ class Feed extends Component {
           createdAt: resData.data.createPost.createdAt
         };
         this.setState(prevState => {
+          let updatedPosts = [...prevState.posts];
+          if (prevState.editPost) {
+            const postIndex = prevState.posts.findIndex(
+              p => p._id === prevState.editPost._id
+            );
+            updatedPosts[postIndex] = post;
+          } else {
+            updatedPosts.pop();
+            updatedPosts.unshift(post);
+          }
           return {
+            posts: updatedPosts,
             isEditing: false,
             editPost: null,
             editLoading: false
