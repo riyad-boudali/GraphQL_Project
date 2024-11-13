@@ -61,11 +61,12 @@ app.use(auth);
 
 app.put("/post-image", (req, res, next) => {
   if (!req.isAuth) {
-    throw new Error('Not authenticated!')
+    throw new Error('Not authenticated!');
   }
   if (!req.file) {
     return res.status(200).json({ message: "No file provided!" });
   }
+  console.log(req.body.oldPath);
   if (req.body.oldPath) {
     clearImage(req.body.oldPath);
   }
@@ -111,7 +112,7 @@ mongoose
   });
 
 const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", filePath);
+  filePath = path.join(__dirname, "..", "back-end", filePath);
   fs.unlink(filePath, (err) => {
     if (err) {
       throw err;
