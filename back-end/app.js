@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const fs = require("fs");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
@@ -10,6 +9,7 @@ const { createHandler } = require("graphql-http/lib/use/express");
 const graphqlSchema = require("./graphql/schema");
 const graphqlResolver = require("./graphql/resolvers");
 const auth = require("./middleware/auth");
+const { clearImage } = require("./util/file");
 
 dotenv.config();
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -61,7 +61,7 @@ app.use(auth);
 
 app.put("/post-image", (req, res, next) => {
   if (!req.isAuth) {
-    throw new Error('Not authenticated!');
+    throw new Error("Not authenticated!");
   }
   if (!req.file) {
     return res.status(200).json({ message: "No file provided!" });
@@ -110,12 +110,3 @@ mongoose
   .catch((err) => {
     console.log(err);
   });
-
-const clearImage = (filePath) => {
-  filePath = path.join(__dirname, "..", "back-end", filePath);
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      throw err;
-    }
-  });
-};
